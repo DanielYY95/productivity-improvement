@@ -1,0 +1,141 @@
+# 탐지 대상 파일 패턴
+file_patterns:
+  - "application.properties"
+  - "application.yml"
+  - "application.yaml"
+  - "application-*.yml"
+  - "application-*.yaml"
+  - "application-*.properties"
+  - "*.env"
+  - ".env"
+  - ".env.*"
+  - "example.env"
+  - "bootstrap.yml"
+  - "bootstrap.yaml"
+  - "bootstrap.properties"
+  - "bootstrap-*.yml"
+  - "bootstrap-*.yaml"
+  - "bootstrap-*.properties"
+
+# 제외할 디렉토리 패턴
+exclude_dirs:
+  - ".git"
+  - "node_modules"
+  - "target"
+  - "build"
+  - ".idea"
+  - ".vscode"
+  - "__pycache__"
+  - "venv"
+  - ".gradle"
+
+# 민감 정보 키 패턴 (정규식, 대소문자 무시)
+sensitive_key_patterns:
+  # 비밀번호 관련
+  - "password"
+  - "passwd"
+  - "pwd"
+  - "pass"
+
+  # 비밀키/토큰 관련
+  - "secret"
+  - "token"
+  - "api[-_]?key"
+  - "apikey"
+  - "private[-_]?key"
+  - "access[-_]?key"
+  - "auth[-_]?key"
+
+  # 인증 정보
+  - "credential"
+  - "auth[-_]?token"
+  - "bearer"
+  - "oauth"
+
+  # 암호화 관련
+  - "encrypt"
+  - "decrypt"
+  - "cipher"
+  - "salt"
+  - "iv" # initialization vector
+
+  # 클라우드/외부 서비스
+  - "aws[-_]?secret"
+  - "azure[-_]?key"
+  - "gcp[-_]?key"
+  - "cloud[-_]?key"
+
+  # DB 관련
+  - "jdbc[-_]?password"
+  - "db[-_]?password"
+  - "database[-_]?password"
+  - "datasource.*password"
+
+  # 기타
+  - "signing[-_]?key"
+  - "client[-_]?secret"
+  - "app[-_]?secret"
+
+# 민감 정보 값 패턴 (값 자체가 민감할 수 있는 경우)
+sensitive_value_patterns:
+  # Bearer 토큰
+  - "^Bearer\\s+[A-Za-z0-9\\-_]+\\.[A-Za-z0-9\\-_]+\\.[A-Za-z0-9\\-_]+"
+  # JWT 토큰
+  - "^eyJ[A-Za-z0-9\\-_]+\\.[A-Za-z0-9\\-_]+\\.[A-Za-z0-9\\-_]+"
+  # Base64로 인코딩된 긴 문자열 (가능성 있는 키)
+  - "^[A-Za-z0-9+/]{40,}={0,2}$"
+  # AWS Access Key
+  - "^AKIA[A-Z0-9]{16}$"
+  # 일반적인 비밀번호 패턴 (혼합된 문자)
+  - "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$"
+
+# 제외할 키 패턴 (마스킹하지 않을 것들)
+exclude_key_patterns:
+  - "public[-_]?key"
+  - "key[-_]?store[-_]?type"
+  - "key[-_]?alias"
+  - "key[-_]?store[-_]?provider"
+  - "enabled"
+  - "active"
+  - "show[-_]?password" # 설정 플래그
+
+# 제외할 값 패턴 (마스킹하지 않을 것들)
+exclude_value_patterns:
+  - "^\\$\\{.*\\}$" # 스프링 플레이스홀더 ${...}
+  - "^\\{.*\\}$" # 암호화된 값 (jasypt 등)
+  - "^ENC\\(.*\\)$" # jasypt 암호화
+  - "^\\*+$" # 이미 마스킹된 값
+
+# 마스킹 형식
+mask_format: "***MASKED***"
+
+# 백업 설정
+backup:
+  enabled: true
+  suffix: ".backup"
+  directory: ".masking_backup" # 프로젝트 루트에 백업 폴더 생성
+
+# 리포트 설정
+report:
+  enabled: true
+  format: "json" # json, yaml, text
+  output_file: "masking_report.json"
+
+# Ollama LLM 설정
+llm:
+  enabled: false
+  provider: "ollama" # ollama, openai, custom
+  endpoint: "http://localhost:11434" # Ollama 기본 주소
+  model: "gemma3:27b" # 사용할 모델
+  timeout: 120 # Ollama는 더 긴 타임아웃 필요 (초)
+  max_retries: 3
+  # 프롬프트 템플릿 (선택적 - 기본 템플릿 사용시 생략 가능)
+  prompt_template: |
+    당신은 Spring/Spring Boot 프로젝트의 보안 전문가입니다.
+    다음 설정 파일에서 민감한 정보(비밀번호, API 키, 토큰, 인증 정보, 암호화 키 등)가 포함된 키를 찾아주세요.
+
+    설정 파일 내용:
+    {content}
+
+    중요: 반드시 아래 JSON 형식으로만 응답하세요. 다른 설명 없이 JSON만 출력하세요.
+    {{"sensitive_keys": ["key1", "key2", ...]}}

@@ -1,0 +1,20 @@
+# Spring/Spring Boot 프로젝트 민감 정보 마스킹 도구 의존성
+
+# YAML 파일 처리
+PyYAML>=6.0
+
+# CLI 인터페이스
+click>=8.1.0
+rich>=13.0.0
+
+# HTTP 클라이언트 (LLM API 연동)
+requests>=2.28.0
+
+# 파일 패턴 매칭
+pathspec>=0.11.0
+
+# 설정 관리
+python-dotenv>=1.0.0
+
+# 유효성 검증
+pydantic>=2.0.0
